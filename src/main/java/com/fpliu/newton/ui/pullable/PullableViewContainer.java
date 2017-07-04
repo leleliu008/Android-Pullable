@@ -29,10 +29,13 @@ public final class PullableViewContainer<T extends View> extends RelativeLayout 
 
     private StateView stateView;
 
+    //起始页（默认从0开始）
+    private static int startPageNumber = 0;
+
     /**
      * 请求的页数（分页）
      */
-    private int pageNum = 0;
+    private int pageNum = startPageNumber;
 
     /**
      * 一页的记录数（分页）
@@ -71,6 +74,10 @@ public final class PullableViewContainer<T extends View> extends RelativeLayout 
 
         stateView = new StateView(context);
         addView(stateView);
+    }
+
+    public static void setStartPageNumber(int startPageNumber) {
+        PullableViewContainer.startPageNumber = startPageNumber;
     }
 
     public T getPullableView() {
@@ -149,7 +156,7 @@ public final class PullableViewContainer<T extends View> extends RelativeLayout 
 
                     isRequesting.set(true);
 
-                    callback.onRefreshOrLoadMore(PullableViewContainer.this, Type.REFRESH, pageNum = 1, pageSize);
+                    callback.onRefreshOrLoadMore(PullableViewContainer.this, Type.REFRESH, pageNum = startPageNumber, pageSize);
                 });
                 break;
             case LOAD_MORE:
@@ -185,7 +192,7 @@ public final class PullableViewContainer<T extends View> extends RelativeLayout 
 
                     isRequesting.set(true);
 
-                    callback.onRefreshOrLoadMore(PullableViewContainer.this, Type.REFRESH, pageNum = 1, pageSize);
+                    callback.onRefreshOrLoadMore(PullableViewContainer.this, Type.REFRESH, pageNum = startPageNumber, pageSize);
                 }
 
                 @Override
@@ -218,6 +225,10 @@ public final class PullableViewContainer<T extends View> extends RelativeLayout 
                 .getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetInfo = connectivityManager.getActiveNetworkInfo();
         return activeNetInfo != null && activeNetInfo.isConnected();
+    }
+
+    public final boolean isRequesting() {
+        return isRequesting.get();
     }
 
     private static <K extends View> K newView(Class<K> viewClass, Context context) {
