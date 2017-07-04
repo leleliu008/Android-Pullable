@@ -84,6 +84,12 @@ public final class PullableViewContainer<T extends View> extends RelativeLayout 
         return pullableView;
     }
 
+    public void refresh() {
+        if (callback != null) {
+            callback.onRefreshOrLoadMore(PullableViewContainer.this, Type.REFRESH, pageNum = startPageNumber, pageSize);
+        }
+    }
+
     /**
      * 返回结果后，必须调用此方法，改变状态
      *
