@@ -251,4 +251,34 @@ public final class PullableViewContainer<T extends View> extends RelativeLayout 
             return null;
         }
     }
+
+    public void setErrorTextColor(int color) {
+        if (stateView != null) {
+            stateView.setErrorTextColor(color);
+        }
+    }
+
+    public void setActionTextColor(int color) {
+        if (stateView != null) {
+            stateView.setActionTextColor(color);
+        }
+    }
+
+    /**
+     * @param effectType EffectFactory.TYPE_XX
+     */
+    public void setErrorEffectType(int effectType) {
+        if (stateView != null) {
+            stateView.setErrorEffectType(effectType);
+        }
+    }
+
+    /**
+     * @param effectType EffectFactory.TYPE_XX
+     */
+    public void setActionEffectType(int effectType) {
+        if (stateView != null) {
+            stateView.setActionEffectType(effectType);
+        }
+    }
 }
