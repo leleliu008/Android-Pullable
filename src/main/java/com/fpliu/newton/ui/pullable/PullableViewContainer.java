@@ -111,11 +111,13 @@ public final class PullableViewContainer<T extends View> extends RelativeLayout 
 
         if (isSuccess) {
             if (TextUtils.isEmpty(stateViewText)) {
-                stateView.setVisibility(View.GONE);
+                stateView.setVisibility(GONE);
             } else {
+                stateView.setVisibility(VISIBLE);
                 stateView.showErrorTextOnly(stateViewText);
             }
         } else {
+            stateView.setVisibility(VISIBLE);
             stateView.showErrorTextOnly(stateViewText);
         }
 
@@ -154,6 +156,7 @@ public final class PullableViewContainer<T extends View> extends RelativeLayout 
         switch (type) {
             case REFRESH:
                 pullToRefreshLayout.refreshFinish(isSuccess ? PullToRefreshLayout.SUCCEED : PullToRefreshLayout.FAIL, pullableStatusText);
+                stateView.setVisibility(VISIBLE);
                 stateView.showErrorWithAction(stateViewText, "刷新", () -> {
                     //正在请求的过程中，忽略
                     if (isRequesting.get()) {
@@ -167,6 +170,7 @@ public final class PullableViewContainer<T extends View> extends RelativeLayout 
                 break;
             case LOAD_MORE:
                 pullToRefreshLayout.loadmoreFinish(isSuccess ? PullToRefreshLayout.SUCCEED : PullToRefreshLayout.FAIL, pullableStatusText);
+                stateView.setVisibility(VISIBLE);
                 stateView.showErrorWithAction(stateViewText, "刷新", () -> {
                     //正在请求的过程中，忽略
                     if (isRequesting.get()) {
