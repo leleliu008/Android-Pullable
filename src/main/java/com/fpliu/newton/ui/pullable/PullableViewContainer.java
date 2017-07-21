@@ -11,9 +11,6 @@ import android.widget.RelativeLayout;
 
 import com.fpliu.newton.ui.stateview.StateView;
 import com.scwang.smartrefresh.layout.SmartRefreshLayout;
-import com.scwang.smartrefresh.layout.api.RefreshLayout;
-import com.scwang.smartrefresh.layout.listener.OnLoadmoreListener;
-import com.scwang.smartrefresh.layout.listener.OnRefreshListener;
 
 import java.lang.reflect.Constructor;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -214,12 +211,16 @@ public final class PullableViewContainer<T extends View> extends RelativeLayout 
                 callback.onRefreshOrLoadMore(PullableViewContainer.this, PullType.UP, ++pageNum, pageSize);
             });
 
-            if (isNetworkAvailable(getContext())) {
-                stateView.showProgress("有一大波数据来袭...");
-                //第一次主动调用
-                refreshLayout.autoRefresh();
+            if (refreshLayout.isEnableRefresh()) {
+                if (isNetworkAvailable(getContext())) {
+                    stateView.showProgress("有一大波数据来袭...");
+                    //第一次主动调用
+                    refreshLayout.autoRefresh();
+                } else {
+                    stateView.showErrorBecauseNoNetworking();
+                }
             } else {
-                stateView.showErrorBecauseNoNetworking();
+                stateView.setVisibility(GONE);
             }
         }
     }
