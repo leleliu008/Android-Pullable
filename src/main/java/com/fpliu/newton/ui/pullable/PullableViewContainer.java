@@ -65,13 +65,14 @@ public final class PullableViewContainer<T extends View> extends RelativeLayout 
     }
 
     private void initView(Context context, Class<T> pullableViewClass) {
+        RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT);
+
         refreshLayout = new SmartRefreshLayout(context);
         refreshLayout.addView(pullableView = newView(pullableViewClass, context), new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
 
-        addView(refreshLayout);
+        addView(refreshLayout, lp);
 
-        stateView = new StateView(context);
-        addView(stateView);
+        addView(stateView = new StateView(context), lp);
     }
 
     public static void setStartPageNumber(int startPageNumber) {
@@ -192,31 +193,25 @@ public final class PullableViewContainer<T extends View> extends RelativeLayout 
         this.callback = callback;
 
         if (callback != null) {
-            refreshLayout.setOnRefreshListener(new OnRefreshListener() {
-                @Override
-                public void onRefresh(RefreshLayout refreshlayout) {
-                    //正在请求的过程中，忽略
-                    if (isRequesting.get()) {
-                        return;
-                    }
-
-                    isRequesting.set(true);
-
-                    callback.onRefreshOrLoadMore(PullableViewContainer.this, PullType.DOWN, pageNum = startPageNumber, pageSize);
+            refreshLayout.setOnRefreshListener(refreshLayout -> {
+                //正在请求的过程中，忽略
+                if (isRequesting.get()) {
+                    return;
                 }
+
+                isRequesting.set(true);
+
+                callback.onRefreshOrLoadMore(PullableViewContainer.this, PullType.DOWN, pageNum = startPageNumber, pageSize);
             });
-            refreshLayout.setOnLoadmoreListener(new OnLoadmoreListener() {
-                @Override
-                public void onLoadmore(RefreshLayout refreshlayout) {
-                    //正在请求的过程中，忽略
-                    if (isRequesting.get()) {
-                        return;
-                    }
-
-                    isRequesting.set(true);
-
-                    callback.onRefreshOrLoadMore(PullableViewContainer.this, PullType.UP, ++pageNum, pageSize);
+            refreshLayout.setOnLoadmoreListener(refreshLayout -> {
+                //正在请求的过程中，忽略
+                if (isRequesting.get()) {
+                    return;
                 }
+
+                isRequesting.set(true);
+
+                callback.onRefreshOrLoadMore(PullableViewContainer.this, PullType.UP, ++pageNum, pageSize);
             });
 
             if (isNetworkAvailable(getContext())) {
