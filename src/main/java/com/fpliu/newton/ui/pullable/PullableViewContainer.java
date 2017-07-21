@@ -19,14 +19,13 @@ import java.lang.reflect.Constructor;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- *
  * @author 792793182@qq.com 2015-06-26
  */
 public final class PullableViewContainer<T extends View> extends RelativeLayout {
 
     private RefreshOrLoadMoreCallback<T> callback;
 
-    private SmartRefreshLayout pullToRefreshLayout;
+    private SmartRefreshLayout refreshLayout;
 
     private T pullableView;
 
@@ -66,14 +65,10 @@ public final class PullableViewContainer<T extends View> extends RelativeLayout 
     }
 
     private void initView(Context context, Class<T> pullableViewClass) {
-        pullToRefreshLayout = new SmartRefreshLayout(context);
-        View refreshView = inflate(context, R.layout.pullable_refresh_head, null);
-        View loadMoreView = inflate(context, R.layout.pullable_load_more, null);
-        pullToRefreshLayout.addView(refreshView, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
-        pullToRefreshLayout.addView(pullableView = newView(pullableViewClass, context), new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
-        pullToRefreshLayout.addView(loadMoreView, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+        refreshLayout = new SmartRefreshLayout(context);
+        refreshLayout.addView(pullableView = newView(pullableViewClass, context), new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
 
-        addView(pullToRefreshLayout);
+        addView(refreshLayout);
 
         stateView = new StateView(context);
         addView(stateView);
@@ -81,6 +76,10 @@ public final class PullableViewContainer<T extends View> extends RelativeLayout 
 
     public static void setStartPageNumber(int startPageNumber) {
         PullableViewContainer.startPageNumber = startPageNumber;
+    }
+
+    public SmartRefreshLayout getRefreshLayout() {
+        return refreshLayout;
     }
 
     public T getPullableView() {
@@ -104,10 +103,10 @@ public final class PullableViewContainer<T extends View> extends RelativeLayout 
     public void finishRequest(PullType type, boolean isSuccess, String pullableStatusText, String stateViewText) {
         switch (type) {
             case DOWN:
-                pullToRefreshLayout.finishRefresh(2000, isSuccess);
+                refreshLayout.finishRefresh(2000, isSuccess);
                 break;
             case UP:
-                pullToRefreshLayout.finishLoadmore(2000, isSuccess);
+                refreshLayout.finishLoadmore(2000, isSuccess);
                 break;
         }
 
@@ -157,7 +156,7 @@ public final class PullableViewContainer<T extends View> extends RelativeLayout 
     public void finishRequestWithRefresh(PullType type, boolean isSuccess, String pullableStatusText, String stateViewText) {
         switch (type) {
             case DOWN:
-                pullToRefreshLayout.finishRefresh(2000, isSuccess);
+                refreshLayout.finishRefresh(2000, isSuccess);
                 stateView.setVisibility(VISIBLE);
                 stateView.showErrorWithAction(stateViewText, "刷新", () -> {
                     //正在请求的过程中，忽略
@@ -171,7 +170,7 @@ public final class PullableViewContainer<T extends View> extends RelativeLayout 
                 });
                 break;
             case UP:
-                pullToRefreshLayout.finishLoadmore(2000, isSuccess);
+                refreshLayout.finishLoadmore(2000, isSuccess);
                 stateView.setVisibility(VISIBLE);
                 stateView.showErrorWithAction(stateViewText, "刷新", () -> {
                     //正在请求的过程中，忽略
@@ -193,7 +192,7 @@ public final class PullableViewContainer<T extends View> extends RelativeLayout 
         this.callback = callback;
 
         if (callback != null) {
-            pullToRefreshLayout.setOnRefreshListener(new OnRefreshListener() {
+            refreshLayout.setOnRefreshListener(new OnRefreshListener() {
                 @Override
                 public void onRefresh(RefreshLayout refreshlayout) {
                     //正在请求的过程中，忽略
@@ -206,7 +205,7 @@ public final class PullableViewContainer<T extends View> extends RelativeLayout 
                     callback.onRefreshOrLoadMore(PullableViewContainer.this, PullType.DOWN, pageNum = startPageNumber, pageSize);
                 }
             });
-            pullToRefreshLayout.setOnLoadmoreListener(new OnLoadmoreListener() {
+            refreshLayout.setOnLoadmoreListener(new OnLoadmoreListener() {
                 @Override
                 public void onLoadmore(RefreshLayout refreshlayout) {
                     //正在请求的过程中，忽略
@@ -223,7 +222,7 @@ public final class PullableViewContainer<T extends View> extends RelativeLayout 
             if (isNetworkAvailable(getContext())) {
                 stateView.showProgress("有一大波数据来袭...");
                 //第一次主动调用
-                pullToRefreshLayout.autoRefresh();
+                refreshLayout.autoRefresh();
             } else {
                 stateView.showErrorBecauseNoNetworking();
             }
