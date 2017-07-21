@@ -60,6 +60,8 @@ retrolambda {//指定将源码编译的级别，使用下列代码，会将代�
 
 dependencies {
     compile fileTree(dir: 'src/main/libs', include: ['*.jar'])
+    compile 'com.android.support:appcompat-v7:25.3.1'
+    compile 'com.scwang.smartrefresh:SmartRefreshLayout:1.0.2-alpha-8'
     compile 'com.fpliu:Android-StateView:1.0.0'
 }
 

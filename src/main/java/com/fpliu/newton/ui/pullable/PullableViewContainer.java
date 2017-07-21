@@ -10,12 +10,15 @@ import android.view.View;
 import android.widget.RelativeLayout;
 
 import com.fpliu.newton.ui.stateview.StateView;
+import com.scwang.smartrefresh.layout.SmartRefreshLayout;
+import com.scwang.smartrefresh.layout.api.RefreshLayout;
+import com.scwang.smartrefresh.layout.listener.OnLoadmoreListener;
+import com.scwang.smartrefresh.layout.listener.OnRefreshListener;
 
 import java.lang.reflect.Constructor;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * 可下拉刷新、下拉加载更多的ListView，包含头和尾
  *
  * @author 792793182@qq.com 2015-06-26
  */
@@ -23,7 +26,7 @@ public final class PullableViewContainer<T extends View> extends RelativeLayout 
 
     private RefreshOrLoadMoreCallback<T> callback;
 
-    private PullToRefreshLayout pullToRefreshLayout;
+    private SmartRefreshLayout pullToRefreshLayout;
 
     private T pullableView;
 
@@ -63,7 +66,7 @@ public final class PullableViewContainer<T extends View> extends RelativeLayout 
     }
 
     private void initView(Context context, Class<T> pullableViewClass) {
-        pullToRefreshLayout = new PullToRefreshLayout(context);
+        pullToRefreshLayout = new SmartRefreshLayout(context);
         View refreshView = inflate(context, R.layout.pullable_refresh_head, null);
         View loadMoreView = inflate(context, R.layout.pullable_load_more, null);
         pullToRefreshLayout.addView(refreshView, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
@@ -86,7 +89,7 @@ public final class PullableViewContainer<T extends View> extends RelativeLayout 
 
     public void refresh() {
         if (callback != null) {
-            callback.onRefreshOrLoadMore(PullableViewContainer.this, Type.REFRESH, pageNum = startPageNumber, pageSize);
+            callback.onRefreshOrLoadMore(PullableViewContainer.this, PullType.DOWN, pageNum = startPageNumber, pageSize);
         }
     }
 
@@ -98,14 +101,13 @@ public final class PullableViewContainer<T extends View> extends RelativeLayout 
      * @param pullableStatusText
      * @param stateViewText
      */
-    public void finishRequest(Type type, boolean isSuccess, String pullableStatusText, String stateViewText) {
-        int refreshResult = isSuccess ? PullToRefreshLayout.SUCCEED : PullToRefreshLayout.FAIL;
+    public void finishRequest(PullType type, boolean isSuccess, String pullableStatusText, String stateViewText) {
         switch (type) {
-            case REFRESH:
-                pullToRefreshLayout.refreshFinish(refreshResult, pullableStatusText);
+            case DOWN:
+                pullToRefreshLayout.finishRefresh(2000, isSuccess);
                 break;
-            case LOAD_MORE:
-                pullToRefreshLayout.loadmoreFinish(refreshResult, pullableStatusText);
+            case UP:
+                pullToRefreshLayout.finishLoadmore(2000, isSuccess);
                 break;
         }
 
@@ -129,13 +131,13 @@ public final class PullableViewContainer<T extends View> extends RelativeLayout 
      *
      * @param type
      */
-    public void finishRequestSuccess(Type type) {
+    public void finishRequestSuccess(PullType type) {
         String pullableStatusText = "";
         switch (type) {
-            case REFRESH:
+            case DOWN:
                 pullableStatusText = "刷新成功";
                 break;
-            case LOAD_MORE:
+            case UP:
                 pullableStatusText = "加载成功";
                 break;
             default:
@@ -152,10 +154,10 @@ public final class PullableViewContainer<T extends View> extends RelativeLayout 
      * @param pullableStatusText
      * @param stateViewText
      */
-    public void finishRequestWithRefresh(Type type, boolean isSuccess, String pullableStatusText, String stateViewText) {
+    public void finishRequestWithRefresh(PullType type, boolean isSuccess, String pullableStatusText, String stateViewText) {
         switch (type) {
-            case REFRESH:
-                pullToRefreshLayout.refreshFinish(isSuccess ? PullToRefreshLayout.SUCCEED : PullToRefreshLayout.FAIL, pullableStatusText);
+            case DOWN:
+                pullToRefreshLayout.finishRefresh(2000, isSuccess);
                 stateView.setVisibility(VISIBLE);
                 stateView.showErrorWithAction(stateViewText, "刷新", () -> {
                     //正在请求的过程中，忽略
@@ -165,11 +167,11 @@ public final class PullableViewContainer<T extends View> extends RelativeLayout 
 
                     isRequesting.set(true);
 
-                    callback.onRefreshOrLoadMore(PullableViewContainer.this, Type.REFRESH, pageNum = startPageNumber, pageSize);
+                    callback.onRefreshOrLoadMore(PullableViewContainer.this, PullType.DOWN, pageNum = startPageNumber, pageSize);
                 });
                 break;
-            case LOAD_MORE:
-                pullToRefreshLayout.loadmoreFinish(isSuccess ? PullToRefreshLayout.SUCCEED : PullToRefreshLayout.FAIL, pullableStatusText);
+            case UP:
+                pullToRefreshLayout.finishLoadmore(2000, isSuccess);
                 stateView.setVisibility(VISIBLE);
                 stateView.showErrorWithAction(stateViewText, "刷新", () -> {
                     //正在请求的过程中，忽略
@@ -179,7 +181,7 @@ public final class PullableViewContainer<T extends View> extends RelativeLayout 
 
                     isRequesting.set(true);
 
-                    callback.onRefreshOrLoadMore(PullableViewContainer.this, Type.LOAD_MORE, --pageNum, pageSize);
+                    callback.onRefreshOrLoadMore(PullableViewContainer.this, PullType.UP, --pageNum, pageSize);
                 });
                 break;
         }
@@ -191,10 +193,9 @@ public final class PullableViewContainer<T extends View> extends RelativeLayout 
         this.callback = callback;
 
         if (callback != null) {
-            PullToRefreshLayout.OnRefreshListener onRefreshListener = new PullToRefreshLayout.OnRefreshListener() {
-
+            pullToRefreshLayout.setOnRefreshListener(new OnRefreshListener() {
                 @Override
-                public void onRefresh(PullToRefreshLayout pullToRefreshLayout) {
+                public void onRefresh(RefreshLayout refreshlayout) {
                     //正在请求的过程中，忽略
                     if (isRequesting.get()) {
                         return;
@@ -202,11 +203,12 @@ public final class PullableViewContainer<T extends View> extends RelativeLayout 
 
                     isRequesting.set(true);
 
-                    callback.onRefreshOrLoadMore(PullableViewContainer.this, Type.REFRESH, pageNum = startPageNumber, pageSize);
+                    callback.onRefreshOrLoadMore(PullableViewContainer.this, PullType.DOWN, pageNum = startPageNumber, pageSize);
                 }
-
+            });
+            pullToRefreshLayout.setOnLoadmoreListener(new OnLoadmoreListener() {
                 @Override
-                public void onLoadMore(PullToRefreshLayout pullToRefreshLayout) {
+                public void onLoadmore(RefreshLayout refreshlayout) {
                     //正在请求的过程中，忽略
                     if (isRequesting.get()) {
                         return;
@@ -214,15 +216,14 @@ public final class PullableViewContainer<T extends View> extends RelativeLayout 
 
                     isRequesting.set(true);
 
-                    callback.onRefreshOrLoadMore(PullableViewContainer.this, Type.LOAD_MORE, ++pageNum, pageSize);
+                    callback.onRefreshOrLoadMore(PullableViewContainer.this, PullType.UP, ++pageNum, pageSize);
                 }
-            };
-            pullToRefreshLayout.setOnRefreshListener(onRefreshListener);
+            });
 
             if (isNetworkAvailable(getContext())) {
                 stateView.showProgress("有一大波数据来袭...");
                 //第一次主动调用
-                onRefreshListener.onRefresh(pullToRefreshLayout);
+                pullToRefreshLayout.autoRefresh();
             } else {
                 stateView.showErrorBecauseNoNetworking();
             }
