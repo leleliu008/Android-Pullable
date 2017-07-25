@@ -277,4 +277,8 @@ public final class PullableViewContainer<T extends View> extends RelativeLayout 
             stateView.setActionEffectType(effectType);
         }
     }
+
+    public StateView getStateView() {
+        return stateView;
+    }
 }
