@@ -101,10 +101,10 @@ public final class PullableViewContainer<T extends View> extends RelativeLayout 
     public void finishRequest(PullType type, boolean isSuccess, String pullableStatusText, String stateViewText) {
         switch (type) {
             case DOWN:
-                refreshLayout.finishRefresh(2000, isSuccess);
+                refreshLayout.finishRefresh(isSuccess);
                 break;
             case UP:
-                refreshLayout.finishLoadmore(2000, isSuccess);
+                refreshLayout.finishLoadmore(isSuccess);
                 break;
         }
 
@@ -154,7 +154,7 @@ public final class PullableViewContainer<T extends View> extends RelativeLayout 
     public void finishRequestWithRefresh(PullType type, boolean isSuccess, String pullableStatusText, String stateViewText) {
         switch (type) {
             case DOWN:
-                refreshLayout.finishRefresh(2000, isSuccess);
+                refreshLayout.finishRefresh(isSuccess);
                 stateView.setVisibility(VISIBLE);
                 stateView.showErrorWithAction(stateViewText, "刷新", () -> {
                     //正在请求的过程中，忽略
@@ -168,7 +168,7 @@ public final class PullableViewContainer<T extends View> extends RelativeLayout 
                 });
                 break;
             case UP:
-                refreshLayout.finishLoadmore(2000, isSuccess);
+                refreshLayout.finishLoadmore(isSuccess);
                 stateView.setVisibility(VISIBLE);
                 stateView.showErrorWithAction(stateViewText, "刷新", () -> {
                     //正在请求的过程中，忽略
@@ -213,10 +213,11 @@ public final class PullableViewContainer<T extends View> extends RelativeLayout 
 
             if (refreshLayout.isEnableRefresh()) {
                 if (isNetworkAvailable(getContext())) {
-                    stateView.showProgress("有一大波数据来袭...");
+                    stateView.setVisibility(GONE);
                     //第一次主动调用
                     refreshLayout.autoRefresh();
                 } else {
+                    stateView.setVisibility(VISIBLE);
                     stateView.showErrorBecauseNoNetworking();
                 }
             } else {
