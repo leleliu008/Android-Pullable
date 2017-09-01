@@ -289,6 +289,54 @@ public final class PullableViewContainer<T extends View> extends RelativeLayout 
         isRequesting.set(false);
     }
 
+    public void showErrorTextOnly(CharSequence message) {
+        stateView.setVisibility(VISIBLE);
+        stateView.showErrorTextOnly(message);
+    }
+
+    public void showErrorImageOnly(int imageResId) {
+        stateView.setVisibility(VISIBLE);
+        stateView.showErrorImageOnly(imageResId);
+    }
+
+    public void showErrorTextWithRefreshAction(CharSequence stateViewMessage) {
+        stateView.setVisibility(VISIBLE);
+        stateView.showErrorTextWithAction(stateViewMessage, "刷新", () -> {
+            //正在请求的过程中，忽略
+            if (isRequesting.get()) {
+                return;
+            }
+
+            isRequesting.set(true);
+
+            callback.onRefreshOrLoadMore(PullableViewContainer.this, PullType.DOWN, pageNum = startPageNumber, pageSize);
+        });
+    }
+
+    public void showErrorTextWithRefreshAction(int stateViewImageResId) {
+        stateView.setVisibility(VISIBLE);
+        stateView.showErrorImageWithAction(stateViewImageResId, "刷新", () -> {
+            //正在请求的过程中，忽略
+            if (isRequesting.get()) {
+                return;
+            }
+
+            isRequesting.set(true);
+
+            callback.onRefreshOrLoadMore(PullableViewContainer.this, PullType.DOWN, pageNum = startPageNumber, pageSize);
+        });
+    }
+
+    public void showErrorTextWithAction(CharSequence message, String actionText, Runnable action) {
+        stateView.setVisibility(VISIBLE);
+        stateView.showErrorTextWithAction(message, actionText, action);
+    }
+
+    public void showErrorImageWithAction(int imageResId, String actionText, Runnable action) {
+        stateView.setVisibility(VISIBLE);
+        stateView.showErrorImageWithAction(imageResId, actionText, action);
+    }
+
     public void setRefreshOrLoadMoreCallback(final RefreshOrLoadMoreCallback callback) {
         this.callback = callback;
 
