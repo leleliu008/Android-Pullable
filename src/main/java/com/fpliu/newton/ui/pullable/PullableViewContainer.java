@@ -6,7 +6,6 @@ import android.net.NetworkInfo;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.Log;
-import android.view.MotionEvent;
 import android.view.View;
 import android.widget.RelativeLayout;
 
@@ -65,12 +64,14 @@ public final class PullableViewContainer<T extends View> extends RelativeLayout 
     private void initView(Context context, Class<T> pullableViewClass) {
         RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT);
 
+        RelativeLayout relativeLayout = new RelativeLayout(context);
+        relativeLayout.addView(pullableView = newView(pullableViewClass, context), lp);
+        relativeLayout.addView(stateView = new StateView(context), lp);
+
         refreshLayout = new SmartRefreshLayout(context);
-        refreshLayout.addView(pullableView = newView(pullableViewClass, context), new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+        refreshLayout.addView(relativeLayout, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
 
         addView(refreshLayout, lp);
-
-        addView(stateView = new StateView(context), lp);
     }
 
     public static void setStartPageNumber(int startPageNumber) {
@@ -433,14 +434,5 @@ public final class PullableViewContainer<T extends View> extends RelativeLayout 
 
     public StateView getStateView() {
         return stateView;
-    }
-
-    @Override
-    public boolean dispatchTouchEvent(MotionEvent ev) {
-        //如果正在现实StateView，就直接分发给refreshLayout
-        if (stateView.getVisibility() == VISIBLE) {
-            return refreshLayout.dispatchTouchEvent(ev);
-        }
-        return super.dispatchTouchEvent(ev);
     }
 }
