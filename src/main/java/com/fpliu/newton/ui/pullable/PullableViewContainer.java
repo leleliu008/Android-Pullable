@@ -6,6 +6,7 @@ import android.net.NetworkInfo;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.RelativeLayout;
 
@@ -432,5 +433,14 @@ public final class PullableViewContainer<T extends View> extends RelativeLayout 
 
     public StateView getStateView() {
         return stateView;
+    }
+
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent ev) {
+        //如果正在现实StateView，就直接分发给refreshLayout
+        if (stateView.getVisibility() == VISIBLE) {
+            return refreshLayout.dispatchTouchEvent(ev);
+        }
+        return super.dispatchTouchEvent(ev);
     }
 }
