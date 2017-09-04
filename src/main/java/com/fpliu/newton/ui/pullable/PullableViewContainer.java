@@ -123,11 +123,11 @@ public final class PullableViewContainer<T extends View> extends RelativeLayout 
                 stateView.setVisibility(GONE);
             } else {
                 stateView.setVisibility(VISIBLE);
-                stateView.showErrorTextOnly(stateViewText);
+                stateView.showErrorText(stateViewText);
             }
         } else {
             stateView.setVisibility(VISIBLE);
-            stateView.showErrorTextOnly(stateViewText);
+            stateView.showErrorText(stateViewText);
         }
 
         isRequesting.set(false);
@@ -155,11 +155,43 @@ public final class PullableViewContainer<T extends View> extends RelativeLayout 
                 stateView.setVisibility(GONE);
             } else {
                 stateView.setVisibility(VISIBLE);
-                stateView.showErrorImageOnly(stateViewImageResId);
+                stateView.showErrorImage(stateViewImageResId);
             }
         } else {
             stateView.setVisibility(VISIBLE);
-            stateView.showErrorImageOnly(stateViewImageResId);
+            stateView.showErrorImage(stateViewImageResId);
+        }
+
+        isRequesting.set(false);
+    }
+
+    /**
+     * 返回结果后，必须调用此方法，改变状态
+     *
+     * @param type
+     * @param isSuccess
+     * @param stateViewImageResId
+     */
+    public void finishRequest(PullType type, boolean isSuccess, int stateViewImageResId, String stateViewText) {
+        switch (type) {
+            case DOWN:
+                refreshLayout.finishRefresh(isSuccess);
+                break;
+            case UP:
+                refreshLayout.finishLoadmore(isSuccess);
+                break;
+        }
+
+        if (isSuccess) {
+            if (stateViewImageResId == 0 && TextUtils.isEmpty(stateViewText)) {
+                stateView.setVisibility(GONE);
+            } else {
+                stateView.setVisibility(VISIBLE);
+                stateView.showErrorImageAndText(stateViewImageResId, stateViewText);
+            }
+        } else {
+            stateView.setVisibility(VISIBLE);
+            stateView.showErrorImageAndText(stateViewImageResId, stateViewText);
         }
 
         isRequesting.set(false);
@@ -172,7 +204,7 @@ public final class PullableViewContainer<T extends View> extends RelativeLayout 
      * @param isSuccess
      * @param stateViewText
      */
-    public void finishRequestWithRefresh(PullType type, boolean isSuccess, String stateViewText) {
+    public void finishRequestWithRefreshAction(PullType type, boolean isSuccess, String stateViewText) {
         switch (type) {
             case DOWN:
                 refreshLayout.finishRefresh(isSuccess);
@@ -214,7 +246,7 @@ public final class PullableViewContainer<T extends View> extends RelativeLayout 
      * @param isSuccess
      * @param stateViewImageResId
      */
-    public void finishRequestWithRefresh(PullType type, boolean isSuccess, int stateViewImageResId) {
+    public void finishRequestWithRefreshAction(PullType type, boolean isSuccess, int stateViewImageResId) {
         switch (type) {
             case DOWN:
                 refreshLayout.finishRefresh(isSuccess);
@@ -234,6 +266,48 @@ public final class PullableViewContainer<T extends View> extends RelativeLayout 
                 refreshLayout.finishLoadmore(isSuccess);
                 stateView.setVisibility(VISIBLE);
                 stateView.showErrorImageWithAction(stateViewImageResId, "刷新", () -> {
+                    //正在请求的过程中，忽略
+                    if (isRequesting.get()) {
+                        return;
+                    }
+
+                    isRequesting.set(true);
+
+                    callback.onRefreshOrLoadMore(PullableViewContainer.this, PullType.UP, --pageNum, pageSize);
+                });
+                break;
+        }
+
+        isRequesting.set(false);
+    }
+
+    /**
+     * 带刷新按钮
+     *
+     * @param type
+     * @param isSuccess
+     * @param stateViewImageResId
+     */
+    public void finishRequestWithRefreshAction(PullType type, boolean isSuccess, int stateViewImageResId, String stateViewText) {
+        switch (type) {
+            case DOWN:
+                refreshLayout.finishRefresh(isSuccess);
+                stateView.setVisibility(VISIBLE);
+                stateView.showErrorImageAndTextWithAction(stateViewImageResId, stateViewText, "刷新", () -> {
+                    //正在请求的过程中，忽略
+                    if (isRequesting.get()) {
+                        return;
+                    }
+
+                    isRequesting.set(true);
+
+                    callback.onRefreshOrLoadMore(PullableViewContainer.this, PullType.DOWN, pageNum = startPageNumber, pageSize);
+                });
+                break;
+            case UP:
+                refreshLayout.finishLoadmore(isSuccess);
+                stateView.setVisibility(VISIBLE);
+                stateView.showErrorImageAndTextWithAction(stateViewImageResId, stateViewText, "刷新", () -> {
                     //正在请求的过程中，忽略
                     if (isRequesting.get()) {
                         return;
@@ -291,14 +365,54 @@ public final class PullableViewContainer<T extends View> extends RelativeLayout 
         isRequesting.set(false);
     }
 
-    public void showErrorTextOnly(CharSequence message) {
+    /**
+     * 带按钮
+     *
+     * @param type
+     * @param isSuccess
+     * @param stateViewText
+     */
+    public void finishRequestWithAction(PullType type, boolean isSuccess, int stateViewImageResId, String stateViewText, String actionText, Runnable action) {
+        switch (type) {
+            case DOWN:
+                refreshLayout.finishRefresh(isSuccess);
+                break;
+            case UP:
+                refreshLayout.finishLoadmore(isSuccess);
+                break;
+        }
         stateView.setVisibility(VISIBLE);
-        stateView.showErrorTextOnly(message);
+        stateView.showErrorImageAndTextWithAction(stateViewImageResId, stateViewText, actionText, action);
+        isRequesting.set(false);
     }
 
-    public void showErrorImageOnly(int imageResId) {
+    public void showErrorImage(int imageResId) {
         stateView.setVisibility(VISIBLE);
-        stateView.showErrorImageOnly(imageResId);
+        stateView.showErrorImage(imageResId);
+    }
+
+    public void showErrorText(CharSequence message) {
+        stateView.setVisibility(VISIBLE);
+        stateView.showErrorText(message);
+    }
+
+    public void showErrorImageAndText(int imageResId, CharSequence message) {
+        stateView.setVisibility(VISIBLE);
+        stateView.showErrorImageAndText(imageResId, message);
+    }
+
+    public void showErrorImageWithRefreshAction(int stateViewImageResId) {
+        stateView.setVisibility(VISIBLE);
+        stateView.showErrorImageWithAction(stateViewImageResId, "刷新", () -> {
+            //正在请求的过程中，忽略
+            if (isRequesting.get()) {
+                return;
+            }
+
+            isRequesting.set(true);
+
+            callback.onRefreshOrLoadMore(PullableViewContainer.this, PullType.DOWN, pageNum = startPageNumber, pageSize);
+        });
     }
 
     public void showErrorTextWithRefreshAction(CharSequence stateViewMessage) {
@@ -315,9 +429,9 @@ public final class PullableViewContainer<T extends View> extends RelativeLayout 
         });
     }
 
-    public void showErrorTextWithRefreshAction(int stateViewImageResId) {
+    public void showErrorImageAndTextWithRefreshAction(int stateViewImageResId, CharSequence stateViewMessage) {
         stateView.setVisibility(VISIBLE);
-        stateView.showErrorImageWithAction(stateViewImageResId, "刷新", () -> {
+        stateView.showErrorImageAndTextWithAction(stateViewImageResId, stateViewMessage, "刷新", () -> {
             //正在请求的过程中，忽略
             if (isRequesting.get()) {
                 return;
@@ -329,14 +443,19 @@ public final class PullableViewContainer<T extends View> extends RelativeLayout 
         });
     }
 
+    public void showErrorImageWithAction(int imageResId, String actionText, Runnable action) {
+        stateView.setVisibility(VISIBLE);
+        stateView.showErrorImageWithAction(imageResId, actionText, action);
+    }
+
     public void showErrorTextWithAction(CharSequence message, String actionText, Runnable action) {
         stateView.setVisibility(VISIBLE);
         stateView.showErrorTextWithAction(message, actionText, action);
     }
 
-    public void showErrorImageWithAction(int imageResId, String actionText, Runnable action) {
+    public void showErrorImageAndTextWithAction(int imageResId, CharSequence message, String actionText, Runnable action) {
         stateView.setVisibility(VISIBLE);
-        stateView.showErrorImageWithAction(imageResId, actionText, action);
+        stateView.showErrorImageAndTextWithAction(imageResId, message, actionText, action);
     }
 
     public void setRefreshOrLoadMoreCallback(final RefreshOrLoadMoreCallback callback) {
@@ -364,17 +483,11 @@ public final class PullableViewContainer<T extends View> extends RelativeLayout 
                 callback.onRefreshOrLoadMore(PullableViewContainer.this, PullType.UP, ++pageNum, pageSize);
             });
 
+            stateView.setVisibility(GONE);
+
+            //第一次主动调用
             if (refreshLayout.isEnableRefresh()) {
-                if (isNetworkAvailable(getContext())) {
-                    stateView.setVisibility(GONE);
-                    //第一次主动调用
-                    refreshLayout.autoRefresh();
-                } else {
-                    stateView.setVisibility(VISIBLE);
-                    stateView.showErrorBecauseNoNetworking();
-                }
-            } else {
-                stateView.setVisibility(GONE);
+                refreshLayout.autoRefresh();
             }
         }
     }
