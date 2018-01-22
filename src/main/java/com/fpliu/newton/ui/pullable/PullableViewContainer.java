@@ -4,10 +4,8 @@ import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.text.TextUtils;
-import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 
 import com.fpliu.newton.ui.stateview.StateView;
@@ -45,25 +43,16 @@ public final class PullableViewContainer<T extends View> extends SmartRefreshLay
      */
     private AtomicBoolean isRequesting = new AtomicBoolean(false);
 
-    public PullableViewContainer(Context context, Class<T> pullableViewClass) {
-        super(context);
-        initView(context, pullableViewClass);
+    public PullableViewContainer(Class<T> pullableViewClass, StateView stateView) {
+        super(stateView.getContext());
+        this.stateView = stateView;
+        pullableView = newView(pullableViewClass, stateView.getContext());
     }
 
-    public PullableViewContainer(Context context, AttributeSet attrs) {
-        super(context, attrs);
-        initView(context, null);
-    }
-
-    public PullableViewContainer(Context context, AttributeSet attrs, int defStyle) {
-        super(context, attrs, defStyle);
-        initView(context, null);
-    }
-
-    private void initView(Context context, Class<T> pullableViewClass) {
-        RelativeLayout relativeLayout = new RelativeLayout(context);
-        relativeLayout.addView(pullableView = newView(pullableViewClass, context), new RelativeLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
-        relativeLayout.addView(stateView = new StateView(context), new RelativeLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+    public void setDefaultLayout() {
+        RelativeLayout relativeLayout = new RelativeLayout(getContext());
+        relativeLayout.addView(pullableView, new RelativeLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+        relativeLayout.addView(stateView, new RelativeLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
 
         addView(relativeLayout, new SmartRefreshLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
     }
@@ -72,22 +61,11 @@ public final class PullableViewContainer<T extends View> extends SmartRefreshLay
         PullableViewContainer.startPageNumber = startPageNumber;
     }
 
-    public SmartRefreshLayout getRefreshLayout() {
-        return this;
-    }
-
     public T getPullableView() {
         return pullableView;
     }
 
     public StateView getStateView() {
-        return stateView;
-    }
-
-    //StateView的位置可能会发生改变，所以提供此方法
-    public StateView removeStateViewFromParent() {
-        ViewGroup viewGroup = (ViewGroup) stateView.getParent();
-        viewGroup.removeView(stateView);
         return stateView;
     }
 
