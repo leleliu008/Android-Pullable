@@ -19,11 +19,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * @author 792793182@qq.com 2015-06-26
  */
-public final class PullableViewContainer<T extends View> extends RelativeLayout {
+public final class PullableViewContainer<T extends View> extends SmartRefreshLayout {
 
     private RefreshOrLoadMoreCallback<T> callback;
-
-    private SmartRefreshLayout refreshLayout;
 
     private T pullableView;
 
@@ -64,13 +62,10 @@ public final class PullableViewContainer<T extends View> extends RelativeLayout 
 
     private void initView(Context context, Class<T> pullableViewClass) {
         RelativeLayout relativeLayout = new RelativeLayout(context);
-        relativeLayout.addView(pullableView = newView(pullableViewClass, context), new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
-        relativeLayout.addView(stateView = new StateView(context), new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+        relativeLayout.addView(pullableView = newView(pullableViewClass, context), new RelativeLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+        relativeLayout.addView(stateView = new StateView(context), new RelativeLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
 
-        refreshLayout = new SmartRefreshLayout(context);
-        refreshLayout.addView(relativeLayout, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
-
-        addView(refreshLayout, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+        addView(relativeLayout, new SmartRefreshLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
     }
 
     public static void setStartPageNumber(int startPageNumber) {
@@ -78,7 +73,7 @@ public final class PullableViewContainer<T extends View> extends RelativeLayout 
     }
 
     public SmartRefreshLayout getRefreshLayout() {
-        return refreshLayout;
+        return this;
     }
 
     public T getPullableView() {
@@ -121,21 +116,24 @@ public final class PullableViewContainer<T extends View> extends RelativeLayout 
     public void finishRequest(PullType type, boolean isSuccess, String stateViewText) {
         switch (type) {
             case DOWN:
-                refreshLayout.finishRefresh(isSuccess);
+                finishRefresh(isSuccess);
                 break;
             case UP:
-                refreshLayout.finishLoadmore(isSuccess);
+                finishLoadmore(isSuccess);
                 break;
         }
 
         if (isSuccess) {
             if (TextUtils.isEmpty(stateViewText)) {
+                pullableView.setVisibility(VISIBLE);
                 stateView.setVisibility(GONE);
             } else {
+                pullableView.setVisibility(GONE);
                 stateView.setVisibility(VISIBLE);
                 stateView.showErrorText(stateViewText);
             }
         } else {
+            pullableView.setVisibility(GONE);
             stateView.setVisibility(VISIBLE);
             stateView.showErrorText(stateViewText);
         }
@@ -153,21 +151,24 @@ public final class PullableViewContainer<T extends View> extends RelativeLayout 
     public void finishRequest(PullType type, boolean isSuccess, int stateViewImageResId) {
         switch (type) {
             case DOWN:
-                refreshLayout.finishRefresh(isSuccess);
+                finishRefresh(isSuccess);
                 break;
             case UP:
-                refreshLayout.finishLoadmore(isSuccess);
+                finishLoadmore(isSuccess);
                 break;
         }
 
         if (isSuccess) {
             if (stateViewImageResId == 0) {
+                pullableView.setVisibility(VISIBLE);
                 stateView.setVisibility(GONE);
             } else {
+                pullableView.setVisibility(GONE);
                 stateView.setVisibility(VISIBLE);
                 stateView.showErrorImage(stateViewImageResId);
             }
         } else {
+            pullableView.setVisibility(GONE);
             stateView.setVisibility(VISIBLE);
             stateView.showErrorImage(stateViewImageResId);
         }
@@ -185,21 +186,24 @@ public final class PullableViewContainer<T extends View> extends RelativeLayout 
     public void finishRequest(PullType type, boolean isSuccess, int stateViewImageResId, String stateViewText) {
         switch (type) {
             case DOWN:
-                refreshLayout.finishRefresh(isSuccess);
+                finishRefresh(isSuccess);
                 break;
             case UP:
-                refreshLayout.finishLoadmore(isSuccess);
+                finishLoadmore(isSuccess);
                 break;
         }
 
         if (isSuccess) {
             if (stateViewImageResId == 0 && TextUtils.isEmpty(stateViewText)) {
+                pullableView.setVisibility(VISIBLE);
                 stateView.setVisibility(GONE);
             } else {
+                pullableView.setVisibility(GONE);
                 stateView.setVisibility(VISIBLE);
                 stateView.showErrorImageAndText(stateViewImageResId, stateViewText);
             }
         } else {
+            pullableView.setVisibility(GONE);
             stateView.setVisibility(VISIBLE);
             stateView.showErrorImageAndText(stateViewImageResId, stateViewText);
         }
@@ -217,7 +221,8 @@ public final class PullableViewContainer<T extends View> extends RelativeLayout 
     public void finishRequestWithRefreshAction(PullType type, boolean isSuccess, String stateViewText) {
         switch (type) {
             case DOWN:
-                refreshLayout.finishRefresh(isSuccess);
+                finishRefresh(isSuccess);
+                pullableView.setVisibility(GONE);
                 stateView.setVisibility(VISIBLE);
                 stateView.showErrorTextWithAction(stateViewText, "刷新", () -> {
                     //正在请求的过程中，忽略
@@ -231,7 +236,8 @@ public final class PullableViewContainer<T extends View> extends RelativeLayout 
                 });
                 break;
             case UP:
-                refreshLayout.finishLoadmore(isSuccess);
+                finishLoadmore(isSuccess);
+                pullableView.setVisibility(GONE);
                 stateView.setVisibility(VISIBLE);
                 stateView.showErrorTextWithAction(stateViewText, "刷新", () -> {
                     //正在请求的过程中，忽略
@@ -259,7 +265,8 @@ public final class PullableViewContainer<T extends View> extends RelativeLayout 
     public void finishRequestWithRefreshAction(PullType type, boolean isSuccess, int stateViewImageResId) {
         switch (type) {
             case DOWN:
-                refreshLayout.finishRefresh(isSuccess);
+                finishRefresh(isSuccess);
+                pullableView.setVisibility(GONE);
                 stateView.setVisibility(VISIBLE);
                 stateView.showErrorImageWithAction(stateViewImageResId, "刷新", () -> {
                     //正在请求的过程中，忽略
@@ -273,7 +280,8 @@ public final class PullableViewContainer<T extends View> extends RelativeLayout 
                 });
                 break;
             case UP:
-                refreshLayout.finishLoadmore(isSuccess);
+                finishLoadmore(isSuccess);
+                pullableView.setVisibility(GONE);
                 stateView.setVisibility(VISIBLE);
                 stateView.showErrorImageWithAction(stateViewImageResId, "刷新", () -> {
                     //正在请求的过程中，忽略
@@ -301,7 +309,8 @@ public final class PullableViewContainer<T extends View> extends RelativeLayout 
     public void finishRequestWithRefreshAction(PullType type, boolean isSuccess, int stateViewImageResId, String stateViewText) {
         switch (type) {
             case DOWN:
-                refreshLayout.finishRefresh(isSuccess);
+                finishRefresh(isSuccess);
+                pullableView.setVisibility(GONE);
                 stateView.setVisibility(VISIBLE);
                 stateView.showErrorImageAndTextWithAction(stateViewImageResId, stateViewText, "刷新", () -> {
                     //正在请求的过程中，忽略
@@ -315,7 +324,8 @@ public final class PullableViewContainer<T extends View> extends RelativeLayout 
                 });
                 break;
             case UP:
-                refreshLayout.finishLoadmore(isSuccess);
+                finishLoadmore(isSuccess);
+                pullableView.setVisibility(GONE);
                 stateView.setVisibility(VISIBLE);
                 stateView.showErrorImageAndTextWithAction(stateViewImageResId, stateViewText, "刷新", () -> {
                     //正在请求的过程中，忽略
@@ -343,12 +353,13 @@ public final class PullableViewContainer<T extends View> extends RelativeLayout 
     public void finishRequestWithAction(PullType type, boolean isSuccess, int stateViewImageResId, String actionText, Runnable action) {
         switch (type) {
             case DOWN:
-                refreshLayout.finishRefresh(isSuccess);
+                finishRefresh(isSuccess);
                 break;
             case UP:
-                refreshLayout.finishLoadmore(isSuccess);
+                finishLoadmore(isSuccess);
                 break;
         }
+        pullableView.setVisibility(GONE);
         stateView.setVisibility(VISIBLE);
         stateView.showErrorImageWithAction(stateViewImageResId, actionText, action);
         isRequesting.set(false);
@@ -364,12 +375,13 @@ public final class PullableViewContainer<T extends View> extends RelativeLayout 
     public void finishRequestWithAction(PullType type, boolean isSuccess, String stateViewText, String actionText, Runnable action) {
         switch (type) {
             case DOWN:
-                refreshLayout.finishRefresh(isSuccess);
+                finishRefresh(isSuccess);
                 break;
             case UP:
-                refreshLayout.finishLoadmore(isSuccess);
+                finishLoadmore(isSuccess);
                 break;
         }
+        pullableView.setVisibility(GONE);
         stateView.setVisibility(VISIBLE);
         stateView.showErrorTextWithAction(stateViewText, actionText, action);
         isRequesting.set(false);
@@ -385,33 +397,38 @@ public final class PullableViewContainer<T extends View> extends RelativeLayout 
     public void finishRequestWithAction(PullType type, boolean isSuccess, int stateViewImageResId, String stateViewText, String actionText, Runnable action) {
         switch (type) {
             case DOWN:
-                refreshLayout.finishRefresh(isSuccess);
+                finishRefresh(isSuccess);
                 break;
             case UP:
-                refreshLayout.finishLoadmore(isSuccess);
+                finishLoadmore(isSuccess);
                 break;
         }
+        pullableView.setVisibility(GONE);
         stateView.setVisibility(VISIBLE);
         stateView.showErrorImageAndTextWithAction(stateViewImageResId, stateViewText, actionText, action);
         isRequesting.set(false);
     }
 
     public void showErrorImage(int imageResId) {
+        pullableView.setVisibility(GONE);
         stateView.setVisibility(VISIBLE);
         stateView.showErrorImage(imageResId);
     }
 
     public void showErrorText(CharSequence message) {
+        pullableView.setVisibility(GONE);
         stateView.setVisibility(VISIBLE);
         stateView.showErrorText(message);
     }
 
     public void showErrorImageAndText(int imageResId, CharSequence message) {
+        pullableView.setVisibility(GONE);
         stateView.setVisibility(VISIBLE);
         stateView.showErrorImageAndText(imageResId, message);
     }
 
     public void showErrorImageWithRefreshAction(int stateViewImageResId) {
+        pullableView.setVisibility(GONE);
         stateView.setVisibility(VISIBLE);
         stateView.showErrorImageWithAction(stateViewImageResId, "刷新", () -> {
             //正在请求的过程中，忽略
@@ -426,6 +443,7 @@ public final class PullableViewContainer<T extends View> extends RelativeLayout 
     }
 
     public void showErrorTextWithRefreshAction(CharSequence stateViewMessage) {
+        pullableView.setVisibility(GONE);
         stateView.setVisibility(VISIBLE);
         stateView.showErrorTextWithAction(stateViewMessage, "刷新", () -> {
             //正在请求的过程中，忽略
@@ -440,6 +458,7 @@ public final class PullableViewContainer<T extends View> extends RelativeLayout 
     }
 
     public void showErrorImageAndTextWithRefreshAction(int stateViewImageResId, CharSequence stateViewMessage) {
+        pullableView.setVisibility(GONE);
         stateView.setVisibility(VISIBLE);
         stateView.showErrorImageAndTextWithAction(stateViewImageResId, stateViewMessage, "刷新", () -> {
             //正在请求的过程中，忽略
@@ -454,16 +473,19 @@ public final class PullableViewContainer<T extends View> extends RelativeLayout 
     }
 
     public void showErrorImageWithAction(int imageResId, String actionText, Runnable action) {
+        pullableView.setVisibility(GONE);
         stateView.setVisibility(VISIBLE);
         stateView.showErrorImageWithAction(imageResId, actionText, action);
     }
 
     public void showErrorTextWithAction(CharSequence message, String actionText, Runnable action) {
+        pullableView.setVisibility(GONE);
         stateView.setVisibility(VISIBLE);
         stateView.showErrorTextWithAction(message, actionText, action);
     }
 
     public void showErrorImageAndTextWithAction(int imageResId, CharSequence message, String actionText, Runnable action) {
+        pullableView.setVisibility(GONE);
         stateView.setVisibility(VISIBLE);
         stateView.showErrorImageAndTextWithAction(imageResId, message, actionText, action);
     }
@@ -472,7 +494,7 @@ public final class PullableViewContainer<T extends View> extends RelativeLayout 
         this.callback = callback;
 
         if (callback != null) {
-            refreshLayout.setOnRefreshListener(refreshLayout -> {
+            setOnRefreshListener(refreshLayout -> {
                 //正在请求的过程中，忽略
                 if (isRequesting.get()) {
                     return;
@@ -482,7 +504,7 @@ public final class PullableViewContainer<T extends View> extends RelativeLayout 
 
                 callback.onRefreshOrLoadMore(PullableViewContainer.this, PullType.DOWN, pageNum = startPageNumber, pageSize);
             });
-            refreshLayout.setOnLoadmoreListener(refreshLayout -> {
+            setOnLoadmoreListener(refreshLayout -> {
                 //正在请求的过程中，忽略
                 if (isRequesting.get()) {
                     return;
@@ -493,11 +515,12 @@ public final class PullableViewContainer<T extends View> extends RelativeLayout 
                 callback.onRefreshOrLoadMore(PullableViewContainer.this, PullType.UP, ++pageNum, pageSize);
             });
 
+            pullableView.setVisibility(VISIBLE);
             stateView.setVisibility(GONE);
 
             //第一次主动调用
-            if (refreshLayout.isEnableRefresh()) {
-                refreshLayout.autoRefresh();
+            if (isEnableRefresh()) {
+                autoRefresh();
             }
         }
     }
