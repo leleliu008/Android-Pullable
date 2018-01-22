@@ -103,15 +103,12 @@ public final class PullableViewContainer<T extends View> extends SmartRefreshLay
 
         if (isSuccess) {
             if (TextUtils.isEmpty(stateViewText)) {
-                pullableView.setVisibility(VISIBLE);
                 stateView.setVisibility(GONE);
             } else {
-                pullableView.setVisibility(GONE);
                 stateView.setVisibility(VISIBLE);
                 stateView.showErrorText(stateViewText);
             }
         } else {
-            pullableView.setVisibility(GONE);
             stateView.setVisibility(VISIBLE);
             stateView.showErrorText(stateViewText);
         }
@@ -138,15 +135,12 @@ public final class PullableViewContainer<T extends View> extends SmartRefreshLay
 
         if (isSuccess) {
             if (stateViewImageResId == 0) {
-                pullableView.setVisibility(VISIBLE);
                 stateView.setVisibility(GONE);
             } else {
-                pullableView.setVisibility(GONE);
                 stateView.setVisibility(VISIBLE);
                 stateView.showErrorImage(stateViewImageResId);
             }
         } else {
-            pullableView.setVisibility(GONE);
             stateView.setVisibility(VISIBLE);
             stateView.showErrorImage(stateViewImageResId);
         }
@@ -173,15 +167,12 @@ public final class PullableViewContainer<T extends View> extends SmartRefreshLay
 
         if (isSuccess) {
             if (stateViewImageResId == 0 && TextUtils.isEmpty(stateViewText)) {
-                pullableView.setVisibility(VISIBLE);
                 stateView.setVisibility(GONE);
             } else {
-                pullableView.setVisibility(GONE);
                 stateView.setVisibility(VISIBLE);
                 stateView.showErrorImageAndText(stateViewImageResId, stateViewText);
             }
         } else {
-            pullableView.setVisibility(GONE);
             stateView.setVisibility(VISIBLE);
             stateView.showErrorImageAndText(stateViewImageResId, stateViewText);
         }
@@ -200,7 +191,6 @@ public final class PullableViewContainer<T extends View> extends SmartRefreshLay
         switch (type) {
             case DOWN:
                 finishRefresh(isSuccess);
-                pullableView.setVisibility(GONE);
                 stateView.setVisibility(VISIBLE);
                 stateView.showErrorTextWithAction(stateViewText, "刷新", () -> {
                     //正在请求的过程中，忽略
@@ -215,7 +205,6 @@ public final class PullableViewContainer<T extends View> extends SmartRefreshLay
                 break;
             case UP:
                 finishLoadmore(isSuccess);
-                pullableView.setVisibility(GONE);
                 stateView.setVisibility(VISIBLE);
                 stateView.showErrorTextWithAction(stateViewText, "刷新", () -> {
                     //正在请求的过程中，忽略
@@ -244,7 +233,6 @@ public final class PullableViewContainer<T extends View> extends SmartRefreshLay
         switch (type) {
             case DOWN:
                 finishRefresh(isSuccess);
-                pullableView.setVisibility(GONE);
                 stateView.setVisibility(VISIBLE);
                 stateView.showErrorImageWithAction(stateViewImageResId, "刷新", () -> {
                     //正在请求的过程中，忽略
@@ -259,7 +247,6 @@ public final class PullableViewContainer<T extends View> extends SmartRefreshLay
                 break;
             case UP:
                 finishLoadmore(isSuccess);
-                pullableView.setVisibility(GONE);
                 stateView.setVisibility(VISIBLE);
                 stateView.showErrorImageWithAction(stateViewImageResId, "刷新", () -> {
                     //正在请求的过程中，忽略
@@ -288,7 +275,6 @@ public final class PullableViewContainer<T extends View> extends SmartRefreshLay
         switch (type) {
             case DOWN:
                 finishRefresh(isSuccess);
-                pullableView.setVisibility(GONE);
                 stateView.setVisibility(VISIBLE);
                 stateView.showErrorImageAndTextWithAction(stateViewImageResId, stateViewText, "刷新", () -> {
                     //正在请求的过程中，忽略
@@ -303,7 +289,6 @@ public final class PullableViewContainer<T extends View> extends SmartRefreshLay
                 break;
             case UP:
                 finishLoadmore(isSuccess);
-                pullableView.setVisibility(GONE);
                 stateView.setVisibility(VISIBLE);
                 stateView.showErrorImageAndTextWithAction(stateViewImageResId, stateViewText, "刷新", () -> {
                     //正在请求的过程中，忽略
@@ -337,7 +322,6 @@ public final class PullableViewContainer<T extends View> extends SmartRefreshLay
                 finishLoadmore(isSuccess);
                 break;
         }
-        pullableView.setVisibility(GONE);
         stateView.setVisibility(VISIBLE);
         stateView.showErrorImageWithAction(stateViewImageResId, actionText, action);
         isRequesting.set(false);
@@ -359,7 +343,6 @@ public final class PullableViewContainer<T extends View> extends SmartRefreshLay
                 finishLoadmore(isSuccess);
                 break;
         }
-        pullableView.setVisibility(GONE);
         stateView.setVisibility(VISIBLE);
         stateView.showErrorTextWithAction(stateViewText, actionText, action);
         isRequesting.set(false);
@@ -381,32 +364,27 @@ public final class PullableViewContainer<T extends View> extends SmartRefreshLay
                 finishLoadmore(isSuccess);
                 break;
         }
-        pullableView.setVisibility(GONE);
         stateView.setVisibility(VISIBLE);
         stateView.showErrorImageAndTextWithAction(stateViewImageResId, stateViewText, actionText, action);
         isRequesting.set(false);
     }
 
     public void showErrorImage(int imageResId) {
-        pullableView.setVisibility(GONE);
         stateView.setVisibility(VISIBLE);
         stateView.showErrorImage(imageResId);
     }
 
     public void showErrorText(CharSequence message) {
-        pullableView.setVisibility(GONE);
         stateView.setVisibility(VISIBLE);
         stateView.showErrorText(message);
     }
 
     public void showErrorImageAndText(int imageResId, CharSequence message) {
-        pullableView.setVisibility(GONE);
         stateView.setVisibility(VISIBLE);
         stateView.showErrorImageAndText(imageResId, message);
     }
 
     public void showErrorImageWithRefreshAction(int stateViewImageResId) {
-        pullableView.setVisibility(GONE);
         stateView.setVisibility(VISIBLE);
         stateView.showErrorImageWithAction(stateViewImageResId, "刷新", () -> {
             //正在请求的过程中，忽略
@@ -421,7 +399,6 @@ public final class PullableViewContainer<T extends View> extends SmartRefreshLay
     }
 
     public void showErrorTextWithRefreshAction(CharSequence stateViewMessage) {
-        pullableView.setVisibility(GONE);
         stateView.setVisibility(VISIBLE);
         stateView.showErrorTextWithAction(stateViewMessage, "刷新", () -> {
             //正在请求的过程中，忽略
@@ -436,7 +413,6 @@ public final class PullableViewContainer<T extends View> extends SmartRefreshLay
     }
 
     public void showErrorImageAndTextWithRefreshAction(int stateViewImageResId, CharSequence stateViewMessage) {
-        pullableView.setVisibility(GONE);
         stateView.setVisibility(VISIBLE);
         stateView.showErrorImageAndTextWithAction(stateViewImageResId, stateViewMessage, "刷新", () -> {
             //正在请求的过程中，忽略
@@ -451,19 +427,16 @@ public final class PullableViewContainer<T extends View> extends SmartRefreshLay
     }
 
     public void showErrorImageWithAction(int imageResId, String actionText, Runnable action) {
-        pullableView.setVisibility(GONE);
         stateView.setVisibility(VISIBLE);
         stateView.showErrorImageWithAction(imageResId, actionText, action);
     }
 
     public void showErrorTextWithAction(CharSequence message, String actionText, Runnable action) {
-        pullableView.setVisibility(GONE);
         stateView.setVisibility(VISIBLE);
         stateView.showErrorTextWithAction(message, actionText, action);
     }
 
     public void showErrorImageAndTextWithAction(int imageResId, CharSequence message, String actionText, Runnable action) {
-        pullableView.setVisibility(GONE);
         stateView.setVisibility(VISIBLE);
         stateView.showErrorImageAndTextWithAction(imageResId, message, actionText, action);
     }
@@ -493,7 +466,6 @@ public final class PullableViewContainer<T extends View> extends SmartRefreshLay
                 callback.onRefreshOrLoadMore(PullableViewContainer.this, PullType.UP, ++pageNum, pageSize);
             });
 
-            pullableView.setVisibility(VISIBLE);
             stateView.setVisibility(GONE);
 
             //第一次主动调用
